@@ -1,0 +1,46 @@
+graph TB
+    subgraph ALUBLK["运算部分模块 — latch_a + ALU + latch_g"]
+        direction TB
+
+        BW_IN["BusWires[7:0] 来自内部总线"]
+
+        subgraph LATCH_A["latch_a [7:0] 暂存器A"]
+            A["8位D触发器<br/>使能: ST_FETCH<br/>锁存第一操作数"]
+        end
+
+        BW_IN --> A
+
+        subgraph ALU["ALU 加减法器 (补码实现)"]
+            direction LR
+            ADDER["加法器核心<br/>+ / -<br/>减法: A + ~B + 1"]
+            SUB["alu_sub<br/>0=加 1=减"]
+        end
+
+        A -->|"A[7:0]"| ALU
+        BW_IN -->|"B[7:0]"| ALU
+        SUB --> ALU
+
+        ALU -->|"Result[7:0]"| LATCH_G
+
+        subgraph LATCH_G["latch_g [7:0] 暂存器G"]
+            G["8位D触发器<br/>使能: ST_EXEC1<br/>锁存ALU结果"]
+        end
+
+        subgraph TIMING["三拍数据流时序"]
+            direction LR
+            T1["ST_FETCH<br/>latch_a <= BusWires<br/>(锁存第一操作数)"]
+            T2["ST_EXEC1<br/>latch_g <= A ± B<br/>(锁存运算结果)"]
+            T3["ST_EXEC2<br/>rf[Rx] <= latch_g<br/>(结果写回寄存器)"]
+            T1 --> T2 --> T3
+        end
+
+        G --> BW_OUT["经 bus_sel=3<br/>驱动 BusWires"]
+    end
+
+    style ALUBLK fill:#fff3e0,stroke:#e65100,stroke-width:3px
+    style LATCH_A fill:#ffe0b2,stroke:#ef6c00,stroke-width:2px
+    style ALU fill:#ffcc80,stroke:#e65100,stroke-width:2px
+    style LATCH_G fill:#ffe0b2,stroke:#ef6c00,stroke-width:2px
+    style TIMING fill:#fff8e1,stroke:#f9a825,stroke-width:1px
+    style BW_IN fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style BW_OUT fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px

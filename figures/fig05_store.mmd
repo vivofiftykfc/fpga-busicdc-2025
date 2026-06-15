@@ -1,0 +1,43 @@
+graph TB
+    subgraph S["store_ctrl"]
+        direction TB
+
+        IN["data_valid_in 脉冲<br/>protocol[7:0] src_ip[31:0]<br/>dst_ip[31:0] icmp_type[7:0]"]
+
+        subgraph FSM["beat 状态机"]
+            direction LR
+            B0["beat = 0<br/>等待有效帧"]
+            B1["beat = 1<br/>第二拍写入"]
+            B0 -->|"data_valid_in=1 写偶数地址"| B1
+            B1 -->|"下一周期 写奇数地址 frame_idx++"| B0
+        end
+
+        IN --> B0
+
+        subgraph ADDR["地址生成"]
+            FIDX["frame_idx[1:0] = 0→1→2→0 循环回绕"]
+            AGEN["ADDRA[2:0] = {frame_idx, beat}<br/>帧0: 0,1 | 帧1: 2,3 | 帧2: 4,5"]
+            FIDX --> AGEN
+        end
+
+        subgraph DINA["数据拼接"]
+            D0["beat=0: DINA = {DesIP[31:0], SrcIP[31:0]}"]
+            D1["beat=1: DINA = {48'd0, ICMP_Type[7:0], protocol[7:0]}"]
+        end
+
+        B0 --> AGEN
+        B1 --> AGEN
+        B0 --> D0
+        B1 --> D1
+
+        AGEN --> OA["ADDRA[2:0]"]
+        D0 --> OD["DINA[63:0]"]
+        D1 --> OD
+        B0 --> OW["WEA"]
+        B1 --> OW
+    end
+
+    style S fill:#f0faf0,stroke:#2e7d32,stroke-width:3px
+    style FSM fill:#e8eaf6,stroke:#283593,stroke-width:2px
+    style ADDR fill:#fff3e0,stroke:#e65100
+    style DINA fill:#fce4ec,stroke:#c62828

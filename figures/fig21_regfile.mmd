@@ -1,0 +1,58 @@
+graph TB
+    subgraph REG["寄存器控制模块 — 通用寄存器组 R0~R3"]
+        direction TB
+
+        BW["BusWires[7:0]<br/>内部公共总线"]
+
+        subgraph R0B["R0 [7:0]"]
+            R0_D["8位D触发器阵列"]
+            R0_Q["Q → 到总线MUX"]
+            R0_D --> R0_Q
+        end
+
+        subgraph R1B["R1 [7:0]"]
+            R1_D["8位D触发器阵列"]
+            R1_Q["Q → 到总线MUX"]
+            R1_D --> R1_Q
+        end
+
+        subgraph R2B["R2 [7:0]"]
+            R2_D["8位D触发器阵列"]
+            R2_Q["Q → 到总线MUX"]
+            R2_D --> R2_Q
+        end
+
+        subgraph R3B["R3 [7:0]"]
+            R3_D["8位D触发器阵列"]
+            R3_Q["Q → 到总线MUX"]
+            R3_D --> R3_Q
+        end
+
+        BW --> R0_D
+        BW --> R1_D
+        BW --> R2_D
+        BW --> R3_D
+
+        subgraph WCTRL["写入控制（FSM同块直接控制）"]
+            W0["LOAD/MOVE指令:<br/>ST_FETCH时钟沿<br/>rf[Rx] <= BusWires"]
+            W1["ADD/SUB指令:<br/>ST_EXEC2时钟沿<br/>rf[Rx] <= latch_g"]
+        end
+
+        WCTRL -.->|"case(Rx)译码选择"| R0_D
+        WCTRL -.->|"case(Rx)译码选择"| R1_D
+        WCTRL -.->|"case(Rx)译码选择"| R2_D
+        WCTRL -.->|"case(Rx)译码选择"| R3_D
+
+        Clock["Clock 全局时钟"] --> R0_D
+        Clock --> R1_D
+        Clock --> R2_D
+        Clock --> R3_D
+    end
+
+    style REG fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style WCTRL fill:#c8e6c9,stroke:#388e3c
+    style BW fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    style R0B fill:#f1f8e9,stroke:#689f38
+    style R1B fill:#f1f8e9,stroke:#689f38
+    style R2B fill:#f1f8e9,stroke:#689f38
+    style R3B fill:#f1f8e9,stroke:#689f38

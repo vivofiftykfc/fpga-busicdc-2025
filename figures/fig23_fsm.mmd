@@ -1,0 +1,49 @@
+stateDiagram-v2
+    [*] --> IDLE : Reset释放
+
+    IDLE : IDLE (0)
+    IDLE : Done=0, 等待Run
+    IDLE : bus_sel按Fun预选
+
+    FETCH : FETCH (1)
+    FETCH : latch_a<=BusWires
+    FETCH : LOAD/MOVE: rf[Rx]<=BusWires
+    FETCH : ADD/SUB: bus_sel切Ry
+
+    EXEC1 : EXEC1 (2)
+    EXEC1 : latch_g<=A±BusWires
+    EXEC1 : ALU运算执行
+
+    EXEC2 : EXEC2 (3)
+    EXEC2 : rf[Rx]<=latch_g
+    EXEC2 : bus_sel=3(latch_g)
+
+    DONE : DONE (4)
+    DONE : Done=1
+    DONE : 检测Run决定去向
+
+    IDLE --> FETCH : Run=1 启动指令
+
+    FETCH --> DONE : Fun[1]=0\nLOAD/MOVE 2周期
+    FETCH --> EXEC1 : Fun[1]=1\nADD/SUB 4周期
+
+    EXEC1 --> EXEC2 : 下一时钟沿
+    EXEC2 --> DONE : 下一时钟沿
+
+    DONE --> IDLE : Run=0\n回空闲等待
+    DONE --> FETCH : Run=1\n直接链接下一指令
+
+    note right of DONE
+        链接机制:
+        Run在DONE期间已拉高
+        状态机跳过IDLE
+        直接进入FETCH
+        避免错过Run脉冲
+    end note
+
+    note left of FETCH
+        寄存器写入与状态机
+        同一always块完成
+        无独立we信号
+        消除NBA延迟
+    end note

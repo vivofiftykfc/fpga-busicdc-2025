@@ -1,0 +1,55 @@
+graph TB
+    subgraph TOP["proc — 8位单总线处理器顶层架构"]
+        direction TB
+
+        Data["Data[7:0]<br/>外部数据输入"] -->|"bus_sel=0"| MUX
+
+        subgraph REG["通用寄存器组 R0~R3"]
+            R0["R0 [7:0]"]
+            R1["R1 [7:0]"]
+            R2["R2 [7:0]"]
+            R3["R3 [7:0]"]
+        end
+
+        REG -->|"bus_sel=1: R[Rx]<br/>bus_sel=2: R[Ry]"| MUX
+
+        subgraph ALU["运算部分"]
+            A["latch_a [7:0]<br/>第一操作数"]
+            ADD["加减法器<br/>alu_sub 控制"]
+            G["latch_g [7:0]<br/>运算结果"]
+            A --> ADD
+            ADD --> G
+        end
+
+        G -->|"bus_sel=3"| MUX
+
+        MUX["4选1总线MUX<br/>bus_sel[1:0]"] --> BW["BusWires[7:0]<br/>内部公共总线"]
+
+        BW --> REG
+        BW --> A
+        BW -->|"第二操作数"| ADD
+
+        subgraph CTRL["控制电路 FSM"]
+            direction LR
+            S["5状态机<br/>0:IDLE 1:FETCH<br/>2:EXEC1 3:EXEC2<br/>4:DONE"]
+        end
+
+        Run["Run"] --> CTRL
+        Fun["Fun[1:0]"] --> CTRL
+        Rx["Rx[1:0]"] --> CTRL
+        Ry["Ry[1:0]"] --> CTRL
+
+        CTRL -->|"bus_sel[1:0]"| MUX
+        CTRL -->|"alu_sub"| ADD
+        CTRL -.->|"rf写入节拍控制"| REG
+        CTRL --> Done["Done"]
+
+        BW --> BW_OUT["BusWires[7:0] 观测输出"]
+    end
+
+    style TOP fill:#fafafa,stroke:#333,stroke-width:3px
+    style REG fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style ALU fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style CTRL fill:#fce4ec,stroke:#c62828,stroke-width:2px
+    style MUX fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style BW fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px

@@ -1,0 +1,44 @@
+graph TB
+    subgraph TOP["network_parser 顶层模块"]
+        direction TB
+
+        AXI["AXI-Stream 输入<br/>tvalid/tdata[63:0]/tkeep[7:0]/tlast<br/>tready = rst_n"]
+
+        subgraph PARSER["axis_rx_parser — 数据接收与信息抽取"]
+            direction LR
+            P1["word_cnt 计数器 0→99→0"] --> P2["case 1/2/3/4 触发解析"]
+            P2 --> P3["EtherType 检测 tdata[47:32]==0x0800"]
+            P2 --> P4["字段提取 protocol SrcIP DesIP ICMP"]
+            P2 --> P5["data_valid 单周期脉冲"]
+        end
+
+        subgraph STORE["store_ctrl — 两拍写入控制器"]
+            direction LR
+            S1["beat 状态机 0⇄1"] --> S2["ADDRA={frame_idx, beat}"]
+            S1 --> S3["DINA 两拍拼接"]
+            S1 --> S4["frame_idx 帧计数 0→1→2→0"]
+        end
+
+        subgraph STORAGE["data_storage — 64位×8深寄存器堆"]
+            T1["3-to-8 地址译码器"] --> T2["mem[0:7] 寄存器阵列"]
+        end
+
+        AXI --> PARSER
+        PARSER -- "data_valid + 特征字段" --> STORE
+        STORE -- "WEA DINA ADDRA" --> STORAGE
+
+        PARSER --> O1["fourth_protocl[7:0]"]
+        PARSER --> O2["SrcIP[31:0]"]
+        PARSER --> O3["DesIP[31:0]"]
+        PARSER --> O4["ICMP_Type[7:0]"]
+        PARSER --> O5["data_valid"]
+        STORE --> O6["WEA"]
+        STORE --> O7["DINA[63:0]"]
+        STORE --> O8["ADDRA[2:0]"]
+    end
+
+    style TOP fill:#fafafa,stroke:#333,stroke-width:3px
+    style PARSER fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style STORE fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style STORAGE fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    style AXI fill:#fce4ec,stroke:#c62828

@@ -1,0 +1,38 @@
+# Temporary Office files
+~$*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Quartus Prime generated files
+db/
+incremental_db/
+output_files/
+*.qws
+*.qdf
+*.bak
+*.rpt
+*.summary
+*.smsg
+*.done
+*.pin
+*.jdi
+*.sld
+*.sof
+*.pof
+*.jditmp
+
+# ModelSim / QuestaSim generated files
+sim/work/
+sim/modelsim.ini
+sim/vsim.wlf
+sim/transcript
+sim/vlog.opt
+*.wlf
+
+# Gate-level simulation netlists
+simulation/
+
+# SignalTap / Logic Analyzer
+*.stp

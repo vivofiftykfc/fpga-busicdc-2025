@@ -1,0 +1,60 @@
+graph TB
+    subgraph PARSER["axis_rx_parser"]
+        direction TB
+
+        CLK["clk, rst_n"] --> WC
+        HANDSHAKE["tvalid & tready"] --> WC
+        TD["tdata[63:0]"]
+
+        WC["word_cnt[7:0] 每拍+1 tlast归零"]
+        CS["case(word_cnt) 控制译码"]
+
+        WC --> CS
+
+        subgraph DET["EtherType 检测 word_cnt=1"]
+            ET["提取 tdata[47:32]"]
+            CMP["== 16'h0800 ?"]
+            IPV4["is_ipv4 寄存器"]
+            ET --> CMP --> IPV4
+        end
+
+        subgraph EXT["字段提取"]
+            F2["word=2: protocol ← tdata[63:56]"]
+            F3a["word=3: SrcIP ← tdata[47:16]"]
+            F3b["word=3: dst_ip_low_temp ← tdata[63:48] 暂存"]
+            F4a["word=4: DesIP ← {tdata[15:0], dst_ip_low_temp} 拼接"]
+            F4b["word=4: ICMP_Type ← tdata[23:16]"]
+        end
+
+        subgraph OUT["输出选择"]
+            MUX["多路选择器 is_ipv4=1:正常值 =0:全F"]
+            DV["data_valid word_cnt=4 单周期高脉冲"]
+        end
+
+        CS --> DET
+        CS --> EXT
+        TD --> ET
+        TD --> F2
+        TD --> F3a
+        TD --> F3b
+        TD --> F4a
+        TD --> F4b
+        F3b --> F4a
+        IPV4 --> MUX
+        F2 --> MUX
+        F3a --> MUX
+        F4a --> MUX
+        F4b --> MUX
+        CS --> DV
+
+        MUX --> OP["protocol[7:0]"]
+        MUX --> OS["src_ip[31:0]"]
+        MUX --> OD["dst_ip[31:0]"]
+        MUX --> OI["icmp_type[7:0]"]
+        DV --> OV["data_valid"]
+    end
+
+    style PARSER fill:#f0f8ff,stroke:#1565c0,stroke-width:3px
+    style DET fill:#fce4ec,stroke:#c62828
+    style EXT fill:#e8f5e9,stroke:#2e7d32
+    style OUT fill:#fff3e0,stroke:#e65100

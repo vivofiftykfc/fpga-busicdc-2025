@@ -1,0 +1,30 @@
+graph TB
+    subgraph DS["data_storage"]
+        direction TB
+
+        IN["we(写使能) addr[2:0] din[63:0] clk"]
+        DEC["3-to-8 地址译码器<br/>addr → 8路独热码片选 sel[0:7]"]
+
+        subgraph REG["寄存器阵列 8×64bit"]
+            direction LR
+            M0["mem[0] 64b<br/>en=we&sel[0]"]
+            M1["mem[1] 64b<br/>en=we&sel[1]"]
+            M2["mem[2] 64b<br/>en=we&sel[2]"]
+            M3["mem[3] 64b<br/>en=we&sel[3]"]
+            M4["mem[4] 64b<br/>en=we&sel[4]"]
+            M5["mem[5] 64b<br/>en=we&sel[5]"]
+            M6["mem[6] 64b<br/>en=we&sel[6]"]
+            M7["mem[7] 64b<br/>en=we&sel[7]"]
+        end
+
+        MAP["存储映射: 0,1→帧1 | 2,3→帧2 | 4,5→帧3 | 6,7→未用<br/>纯寄存器实现, 无Block RAM, 无IP核"]
+
+        IN --> DEC
+        DEC --> REG
+        din["din[63:0] 数据总线"] --> REG
+        clk["clk"] --> REG
+    end
+
+    style DS fill:#fff8f0,stroke:#e65100,stroke-width:3px
+    style REG fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style DEC fill:#e8eaf6,stroke:#283593

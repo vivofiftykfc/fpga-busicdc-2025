@@ -1,0 +1,30 @@
+graph TB
+    subgraph BUS["总线三态输入模块 — 4选1多路选择器 (MUX)"]
+        direction TB
+
+        SEL["bus_sel[1:0] 选择控制<br/>来自控制电路FSM"]
+
+        subgraph INPUTS["四路数据输入"]
+            D0["Data[7:0] 外部数据<br/>(LOAD指令数据源)"]
+            D1["R[Rx][7:0] 目标寄存器<br/>(ADD/SUB第一操作数)"]
+            D2["R[Ry][7:0] 源寄存器<br/>(MOVE数据源/第二操作数)"]
+            D3["latch_g[7:0] ALU结果<br/>(ADD/SUB回写数据)"]
+        end
+
+        MUX["组合逻辑MUX<br/>case(bus_sel)<br/>  00: bus_val=Data<br/>  01: bus_val=R[Rx]<br/>  10: bus_val=R[Ry]<br/>  11: bus_val=latch_g"]
+
+        D0 -->|"00"| MUX
+        D1 -->|"01"| MUX
+        D2 -->|"10"| MUX
+        D3 -->|"11"| MUX
+        SEL --> MUX
+
+        MUX --> BW["BusWires[7:0]<br/>内部公共总线输出"]
+
+        TBLSRC["编码表"]
+        TBL["00=Data | 01=R[Rx]<br/>10=R[Ry] | 11=latch_g"]
+    end
+
+    style BUS fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style MUX fill:#bbdefb,stroke:#1976d2
+    style BW fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
