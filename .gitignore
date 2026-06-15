@@ -24,12 +24,15 @@ output_files/
 *.jditmp
 
 # ModelSim / QuestaSim generated files
-sim/work/
-sim/modelsim.ini
-sim/vsim.wlf
-sim/transcript
-sim/vlog.opt
+**/sim/work/
+**/sim/modelsim.ini
+**/sim/vsim.wlf
+**/sim/transcript
+**/sim/vlog.opt
 *.wlf
+*.qdb
+*.qpg
+*.qtl
 
 # Gate-level simulation netlists
 simulation/

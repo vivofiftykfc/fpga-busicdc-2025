@@ -9,7 +9,7 @@ const {
   WidthType, ShadingType, VerticalAlign, PageNumber, PageBreak
 } = require("docx");
 
-const BASE = "C:/Users/zhang/Desktop/FPGA/my_new";
+const BASE = __dirname;
 const OUT  = BASE + "/实验报告.docx";
 
 // ---- read actual source ----
