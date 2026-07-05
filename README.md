@@ -1,3 +1,8 @@
+![Verilog](https://img.shields.io/badge/-Verilog-000000?style=flat-square&logo=verilog&logoColor=white)
+![FPGA](https://img.shields.io/badge/-FPGA-003B5C?style=flat-square&logo=intel&logoColor=white)
+![Quartus](https://img.shields.io/badge/-Quartus%20Prime-0078D4?style=flat-square)
+![ModelSim](https://img.shields.io/badge/-ModelSim-006633?style=flat-square)
+
 # 2025 Beijing University IC Design Competition — FPGA Digital Design
 
 Two FPGA digital design problems solved for the 2025 Beijing University
